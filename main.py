@@ -20,16 +20,20 @@ def create_directories(base_directory, jpeg_directory, raw_directory, edits_dire
         if not os.path.isdir(directory):
             print(f'Creating {directory}')
             os.mkdir(directory)
+        else:
+            print(f'{directory} already exists. Skipping creation.')
 
 
 def sort_files(base_directory, jpeg_directory, jpeg_extension, raw_directory, raw_extension):
     jpegs = glob.glob(os.path.join(base_directory, f'*{jpeg_extension}'))
     for jpeg in jpegs:
-        move(jpeg, jpeg_directory)
+        print(f'Moving {jpeg} to {jpeg_directory}.')
+        move(jpeg, os.path.join(base_directory, jpeg_directory))
 
     raws = glob.glob(os.path.join(base_directory, f'*{raw_extension}'))
     for raw in raws:
-        move(raw, raw_directory)
+        print(f'Moving {raw} to {raw_directory}.')
+        move(raw, os.path.join(base_directory, raw_directory))
 
 
 def delete_files(base_directory, jpeg_directory, raw_directory, ignore_hidden_files):
@@ -46,9 +50,7 @@ def delete_files(base_directory, jpeg_directory, raw_directory, ignore_hidden_fi
     for base, dirs, files in os.walk(os.path.join(base_directory, raw_directory)):
         for file in files:
             full_file_path = os.path.join(base, file)
-            if Path(file).stem in approved_jpegs:
-                print(f'Leaving {full_file_path}')
-            else:
+            if Path(file).stem not in approved_jpegs:
                 print(f'Deleting {full_file_path}')
                 os.remove(full_file_path)
 
@@ -56,8 +58,8 @@ def delete_files(base_directory, jpeg_directory, raw_directory, ignore_hidden_fi
 def main():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--photo_directory', '-p')
-    parser.add_argument('--config_file', '-c')
+    parser.add_argument('--photo_directory', '-p', required=True)
+    parser.add_argument('--config_file', '-c', default='photoflow.cfg')
     args = parser.parse_args()
 
     photoflow_config = configparser.ConfigParser()
@@ -76,6 +78,5 @@ def main():
     delete_files(args.photo_directory, jpeg_directory, raw_directory, ignore_hidden_files)
 
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     main()
